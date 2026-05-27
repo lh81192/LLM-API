@@ -7,118 +7,58 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <style>
   :root {
-    --bg: #0f1117;
-    --card: #1a1d28;
-    --border: #2a2d3e;
-    --text: #e4e6f0;
-    --text-dim: #8b8fa3;
-    --accent: #4f8cff;
-    --success: #34d399;
-    --danger: #f87171;
-    --warning: #fbbf24;
+    --bg: #0f1117; --card: #1a1d28; --border: #2a2d3e;
+    --text: #e4e6f0; --text-dim: #8b8fa3;
+    --accent: #4f8cff; --success: #34d399; --danger: #f87171; --warning: #fbbf24;
   }
-
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); padding: 20px; min-height: 100vh; }
 
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    padding: 20px;
-    min-height: 100vh;
-  }
-
-  .app-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 20px; padding-bottom: 14px;
-    border-bottom: 1px solid var(--border);
-  }
-
+  .app-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
   .app-header h1 { font-size: 22px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
   .app-header h1 span { color: var(--accent); }
   .app-header .subtitle { font-size: 12px; color: var(--text-dim); font-weight: 400; margin-left: 6px; }
-
-  .status-badge {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 500;
-  }
+  .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 500; }
   .status-badge.idle { background: #2a2d3a; color: var(--text-dim); }
   .status-badge.running { background: #065f46; color: var(--success); }
-
   .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
   .status-dot.idle { background: var(--text-dim); }
   .status-dot.running { background: var(--success); animation: pulse 1.2s infinite; }
   @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
 
-  .card {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 12px; padding: 16px; margin-bottom: 14px;
-  }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 14px; }
+  .card-title { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim); margin-bottom: 10px; font-weight: 500; }
 
-  .card-title {
-    font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;
-    color: var(--text-dim); margin-bottom: 10px; font-weight: 500;
-  }
-
-  /* ===== 配置网格 ===== */
   .config-grid { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
-
   .cfg { flex: 1; min-width: 160px; }
-  .cfg label {
-    display: block; font-size: 11px; color: var(--text-dim);
-    margin-bottom: 4px; font-weight: 500;
-  }
-  .cfg input, .cfg select {
-    width: 100%; padding: 8px 12px; background: #12151f;
-    border: 1px solid var(--border); border-radius: 8px;
-    color: var(--text); font-size: 13px; outline: none; transition: border-color 0.2s;
-  }
+  .cfg label { display: block; font-size: 11px; color: var(--text-dim); margin-bottom: 4px; font-weight: 500; }
+  .cfg input, .cfg select { width: 100%; padding: 8px 12px; background: #12151f; border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 13px; outline: none; transition: border-color 0.2s; }
   .cfg input:focus { border-color: var(--accent); }
   .cfg input[type="password"] { letter-spacing: 1px; }
 
-  .btn {
-    padding: 8px 18px; border: none; border-radius: 8px;
-    font-size: 13px; font-weight: 600; cursor: pointer;
-    transition: all 0.15s; white-space: nowrap;
-  }
+  .btn { padding: 8px 18px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
   .btn:disabled { opacity: 0.35; cursor: not-allowed; }
   .btn-primary { background: var(--accent); color: #fff; }
   .btn-primary:hover:not(:disabled) { background: #3a78ee; }
-  .btn-danger  { background: var(--danger); color: #fff; }
+  .btn-danger { background: var(--danger); color: #fff; }
   .btn-danger:hover:not(:disabled) { background: #d9534f; }
   .btn-success { background: var(--success); color: #12151f; }
   .btn-success:hover:not(:disabled) { background: #2bb87a; }
-  .btn-outline {
-    background: transparent; color: var(--text-dim);
-    border: 1px solid var(--border);
-  }
+  .btn-outline { background: transparent; color: var(--text-dim); border: 1px solid var(--border); }
   .btn-outline:hover { border-color: var(--accent); color: var(--text); }
   .btn-sm { padding: 5px 12px; font-size: 12px; }
 
-  /* ===== Stages 表格 ===== */
   .stage-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  .stage-table th {
-    text-align: left; color: var(--text-dim); font-weight: 500;
-    font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;
-    padding: 6px 8px; border-bottom: 1px solid var(--border);
-  }
+  .stage-table th { text-align: left; color: var(--text-dim); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; padding: 6px 8px; border-bottom: 1px solid var(--border); }
   .stage-table td { padding: 6px 8px; border-bottom: 1px solid #1f2230; }
-  .stage-table input {
-    width: 100%; padding: 6px 10px; background: #12151f;
-    border: 1px solid var(--border); border-radius: 6px;
-    color: var(--text); font-size: 13px; outline: none;
-  }
+  .stage-table input { width: 100%; padding: 6px 10px; background: #12151f; border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 13px; outline: none; }
   .stage-table input:focus { border-color: var(--accent); }
   .stage-table .actions { display: flex; gap: 4px; }
-
   .stage-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
   .stage-summary { font-size: 12px; color: var(--text-dim); }
   .stage-summary span { color: var(--accent); font-weight: 600; }
-
-  /* ===== 预设按钮组 ===== */
   .preset-group { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
 
-  /* ===== 大数字 ===== */
   .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 14px; }
   .stat-card { text-align: center; }
   .stat-card .card-title { text-align: center; }
@@ -129,23 +69,35 @@
   .text-danger { color: var(--danger); }
   .text-warning { color: var(--warning); }
 
-  /* ===== 图表 ===== */
   .chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
   .chart-box .chart-title { font-size: 11px; color: var(--text-dim); margin-bottom: 6px; }
   .chart-wrap { position: relative; height: 150px; }
 
-  /* ===== 日志 ===== */
   .log-card { max-height: 200px; overflow-y: auto; }
   .log-card::-webkit-scrollbar { width: 4px; }
   .log-card::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
   .log-entry { padding: 2px 0; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 11px; word-break: break-all; }
   .log-entry .tm { color: var(--text-dim); margin-right: 8px; }
 
+  /* ===== 报告模块 ===== */
+  .report-card { display: none; border: 1px solid var(--success); }
+  .report-card.visible { display: block; }
+  .report-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .report-title { font-size: 14px; font-weight: 600; color: var(--success); }
+  .report-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .report-table th { text-align: center; color: var(--text-dim); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; padding: 8px 6px; border-bottom: 1px solid var(--border); background: #12151f; }
+  .report-table td { text-align: center; padding: 10px 6px; border-bottom: 1px solid #1f2230; font-weight: 600; font-size: 14px; }
+  .report-table tr:last-child td { border-bottom: none; }
+  .report-meta { font-size: 12px; color: var(--text-dim); margin-bottom: 10px; }
+  .report-raw { display: none; }
+
   @media (max-width: 800px) {
     .stat-row { grid-template-columns: repeat(2, 1fr); }
     .chart-grid { grid-template-columns: 1fr; }
     .config-grid { flex-direction: column; }
     .cfg { min-width: 100%; }
+    .report-table { font-size: 11px; }
+    .report-table td { font-size: 12px; padding: 6px 4px; }
   }
 </style>
 </head>
@@ -153,7 +105,7 @@
 
 <!-- ====== 顶栏 ====== -->
 <div class="app-header">
-  <h1>⚡ <span>LLM</span> Stress Test <span class="subtitle">v2 · 自定义压测</span></h1>
+  <h1>⚡ <span>LLM</span> Stress Test <span class="subtitle">v3 · 自动报告</span></h1>
   <div id="statusBadge" class="status-badge idle">
     <span class="status-dot idle"></span>
     <span id="statusText">空闲</span>
@@ -188,43 +140,60 @@
 <div class="card">
   <div class="stage-header">
     <div class="card-title" style="margin-bottom:0">📈 压力阶段配置</div>
-    <div class="stage-summary">
-      共 <span id="stageCount">0</span> 阶段 · 最大 VU: <span id="stageMaxVu">0</span> · 总时长: <span id="stageTotalTime">0s</span>
-    </div>
+    <div class="stage-summary">共 <span id="stageCount">0</span> 阶段 · 最大 VU: <span id="stageMaxVu">0</span> · 总时长: <span id="stageTotalTime">0s</span></div>
   </div>
-
   <table class="stage-table">
-    <thead>
-      <tr>
-        <th style="width:40px">#</th>
-        <th style="width:160px">持续时间</th>
-        <th style="width:120px">目标 VU 数</th>
-        <th style="width:120px">爬坡/稳态</th>
-        <th style="width:90px">操作</th>
-      </tr>
-    </thead>
-    <tbody id="stageBody">
-      <!-- 由 JS 动态渲染 -->
-    </tbody>
+    <thead><tr><th style="width:40px">#</th><th style="width:160px">持续时间</th><th style="width:120px">目标 VU 数</th><th style="width:120px">爬坡/稳态</th><th style="width:90px">操作</th></tr></thead>
+    <tbody id="stageBody"></tbody>
   </table>
-
   <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
     <button class="btn btn-outline btn-sm" onclick="addStage()">＋ 添加阶段</button>
-    <button class="btn btn-danger btn-sm" onclick="clearStages()">✕ 清空</button>
+    <button class="btn btn-outline btn-sm" onclick="clearStages()">✕ 清空</button>
   </div>
-
   <div class="preset-group">
-    <span style="font-size:11px;color:var(--text-dim);line-height:28px;">📌 快速预设：</span>
-    <button class="btn btn-outline btn-sm" onclick="loadPreset('light')">🟢 轻量 10→20 VU</button>
-    <button class="btn btn-outline btn-sm" onclick="loadPreset('medium')">🟡 标准 10→50 VU</button>
-    <button class="btn btn-outline btn-sm" onclick="loadPreset('heavy')">🔴 重型 10→200 VU</button>
+    <span style="font-size:11px;color:var(--text-dim);line-height:28px;">📌 预设：</span>
+    <button class="btn btn-outline btn-sm" onclick="loadPreset('light')">🟢 轻量 10→20</button>
+    <button class="btn btn-outline btn-sm" onclick="loadPreset('medium')">🟡 标准 10→50</button>
+    <button class="btn btn-outline btn-sm" onclick="loadPreset('heavy')">🔴 重型 10→200</button>
     <button class="btn btn-outline btn-sm" onclick="loadPreset('custom')">📋 原文档阶梯</button>
   </div>
-
   <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
     <button id="btnStart" class="btn btn-success" onclick="startTest()">▶ 启动压测</button>
     <button id="btnStop"  class="btn btn-danger"  onclick="stopTest()" disabled>■ 停止</button>
   </div>
+</div>
+
+<!-- ====== 报告卡片 ====== -->
+<div class="card report-card" id="reportCard">
+  <div class="report-header">
+    <div class="report-title">📊 压测报告</div>
+    <div>
+      <button class="btn btn-outline btn-sm" onclick="downloadReport()">⬇ 下载 .md</button>
+      <button class="btn btn-outline btn-sm" onclick="dismissReport()">✕ 关闭</button>
+    </div>
+  </div>
+  <div class="report-meta" id="reportMeta"></div>
+  <table class="report-table">
+    <thead>
+      <tr>
+        <th>并发</th><th>RPM</th><th>TPM</th><th>TTFT P50</th><th>TTFT P95</th><th>延迟 P50</th><th>输出 tok/s</th><th>成功率</th><th>429率</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr id="reportRow">
+        <td id="rConcur">-</td>
+        <td id="rRpm">-</td>
+        <td id="rTpm">-</td>
+        <td id="rTtftP50">-</td>
+        <td id="rTtftP95">-</td>
+        <td id="rLatP50">-</td>
+        <td id="rTokS">-</td>
+        <td id="rSucc">-</td>
+        <td id="r429">-</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="report-raw" id="reportRaw"></div>
 </div>
 
 <!-- ====== 指标卡片 ====== -->
@@ -253,35 +222,21 @@
 
 <!-- ====== 图表 ====== -->
 <div class="chart-grid">
-  <div class="card chart-box">
-    <div class="chart-title">📊 虚拟用户 (VUs)</div>
-    <div class="chart-wrap"><canvas id="chartVus"></canvas></div>
-  </div>
-  <div class="card chart-box">
-    <div class="chart-title">📊 请求延迟 · P95 (s)</div>
-    <div class="chart-wrap"><canvas id="chartDuration"></canvas></div>
-  </div>
-  <div class="card chart-box">
-    <div class="chart-title">📊 失败率 (%)</div>
-    <div class="chart-wrap"><canvas id="chartFailRate"></canvas></div>
-  </div>
-  <div class="card chart-box">
-    <div class="chart-title">📊 吞吐量 (RPS)</div>
-    <div class="chart-wrap"><canvas id="chartRps"></canvas></div>
-  </div>
+  <div class="card chart-box"><div class="chart-title">📊 虚拟用户 (VUs)</div><div class="chart-wrap"><canvas id="chartVus"></canvas></div></div>
+  <div class="card chart-box"><div class="chart-title">📊 请求延迟 · P95 (s)</div><div class="chart-wrap"><canvas id="chartDuration"></canvas></div></div>
+  <div class="card chart-box"><div class="chart-title">📊 失败率 (%)</div><div class="chart-wrap"><canvas id="chartFailRate"></canvas></div></div>
+  <div class="card chart-box"><div class="chart-title">📊 吞吐量 (RPS)</div><div class="chart-wrap"><canvas id="chartRps"></canvas></div></div>
 </div>
 
 <!-- ====== 日志 ====== -->
 <div class="card log-card" id="logPanel">
-  <div class="card-title" style="position:sticky;top:0;background:var(--card);padding-bottom:6px;z-index:1">
-    📜 运行日志
-  </div>
+  <div class="card-title" style="position:sticky;top:0;background:var(--card);padding-bottom:6px;z-index:1">📜 运行日志</div>
   <div id="logContainer"></div>
 </div>
 
 <script>
 // ============================================================================
-// Stages 数据管理
+// Stages
 // ============================================================================
 let stages = [];
 
@@ -290,175 +245,64 @@ function renderStages() {
   tbody.innerHTML = stages.map((s, i) => `
     <tr>
       <td style="color:var(--text-dim)">${i + 1}</td>
-      <td>
-        <input type="text" value="${s.duration}"
-               onchange="updateStage(${i},'duration',this.value)"
-               placeholder="例: 30s / 2m">
-      </td>
-      <td>
-        <input type="number" value="${s.target}" min="1"
-               onchange="updateStage(${i},'target',parseInt(this.value)||1)">
-      </td>
+      <td><input type="text" value="${s.duration}" onchange="updateStage(${i},'duration',this.value)" placeholder="30s / 2m"></td>
+      <td><input type="number" value="${s.target}" min="1" onchange="updateStage(${i},'target',parseInt(this.value)||1)"></td>
       <td style="color:var(--text-dim);font-size:12px">${describeStage(s, i)}</td>
-      <td>
-        <div class="actions">
-          <button class="btn btn-outline btn-sm" onclick="moveStage(${i},-1)" ${i===0?'disabled':''}>↑</button>
-          <button class="btn btn-outline btn-sm" onclick="moveStage(${i},1)" ${i===stages.length-1?'disabled':''}>↓</button>
-          <button class="btn btn-danger btn-sm" onclick="removeStage(${i})">✕</button>
-        </div>
-      </td>
+      <td><div class="actions">
+        <button class="btn btn-outline btn-sm" onclick="moveStage(${i},-1)" ${i===0?'disabled':''}>↑</button>
+        <button class="btn btn-outline btn-sm" onclick="moveStage(${i},1)" ${i===stages.length-1?'disabled':''}>↓</button>
+        <button class="btn btn-danger btn-sm" onclick="removeStage(${i})">✕</button>
+      </div></td>
     </tr>
   `).join('');
-
-  // 更新汇总
   document.getElementById('stageCount').textContent = stages.length;
-  const maxVu = stages.reduce((m, s) => Math.max(m, s.target), 0);
-  document.getElementById('stageMaxVu').textContent = maxVu;
-  const totalSec = stages.reduce((acc, s) => acc + parseDuration(s.duration), 0);
-  document.getElementById('stageTotalTime').textContent = formatTime(totalSec);
+  document.getElementById('stageMaxVu').textContent = stages.reduce((m, s) => Math.max(m, s.target), 0);
+  const totalSec = stages.reduce((a, s) => a + parseDur(s.duration), 0);
+  document.getElementById('stageTotalTime').textContent = fmtTime(totalSec);
 }
-
 function describeStage(s, i) {
   if (i === 0) return '初始爬坡';
-  const prev = stages[i - 1];
-  if (!prev) return '';
-  if (s.target > prev.target) return `⬆ 爬坡 (+${s.target - prev.target} VU)`;
-  if (s.target < prev.target) return `⬇ 下降 (${s.target} VU)`;
-  return '➡ 稳态维持';
+  const p = stages[i-1]; if (!p) return '';
+  if (s.target > p.target) return `⬆ 爬坡 (+${s.target-p.target})`;
+  if (s.target < p.target) return `⬇ 下降 (${s.target})`;
+  return '➡ 稳态';
 }
+function parseDur(d) { let t=0; const m=d.match(/(\d+)\s*m/), s=d.match(/(\d+)\s*s/); if(m)t+=parseInt(m[1])*60; if(s)t+=parseInt(s[1]); return t||30; }
+function fmtTime(s) { return s>=60 ? (s%60?`${Math.floor(s/60)}m${s%60}s`:`${Math.floor(s/60)}m`) : `${s}s`; }
+function updateStage(i, f, v) { stages[i][f]=v; renderStages(); }
+function addStage() { const last=stages.length>0?stages[stages.length-1]:{duration:'30s',target:10}; stages.push({duration:'30s',target:last.target}); renderStages(); }
+function removeStage(i) { stages.splice(i,1); renderStages(); }
+function clearStages() { stages=[]; renderStages(); }
+function moveStage(i, d) { const s=i+d; if(s<0||s>=stages.length)return; [stages[i],stages[s]]=[stages[s],stages[i]]; renderStages(); }
 
-function parseDuration(d) {
-  d = d.trim();
-  let total = 0;
-  const m = d.match(/(\d+)\s*m/);
-  const s = d.match(/(\d+)\s*s/);
-  if (m) total += parseInt(m[1]) * 60;
-  if (s) total += parseInt(s[1]);
-  return total || 30;
-}
-
-function formatTime(sec) {
-  if (sec >= 60) {
-    const m = Math.floor(sec / 60);
-    const s = sec % 60;
-    return s ? `${m}m${s}s` : `${m}m`;
-  }
-  return `${sec}s`;
-}
-
-function updateStage(idx, field, val) {
-  stages[idx][field] = val;
-  renderStages();
-}
-
-function addStage() {
-  const last = stages.length > 0 ? stages[stages.length - 1] : { duration: '30s', target: 10 };
-  stages.push({ duration: '30s', target: last.target });
-  renderStages();
-}
-
-function removeStage(idx) {
-  stages.splice(idx, 1);
-  renderStages();
-}
-
-function clearStages() {
-  stages = [];
-  renderStages();
-}
-
-function moveStage(idx, dir) {
-  const swap = idx + dir;
-  if (swap < 0 || swap >= stages.length) return;
-  [stages[idx], stages[swap]] = [stages[swap], stages[idx]];
-  renderStages();
-}
-
-// ============================================================================
-// 预设
-// ============================================================================
 function loadPreset(name) {
   const presets = {
-    light: [
-      { duration: '20s', target: 5 },
-      { duration: '30s', target: 5 },
-      { duration: '10s', target: 10 },
-      { duration: '30s', target: 10 },
-      { duration: '15s', target: 20 },
-      { duration: '30s', target: 20 },
-      { duration: '20s', target: 0 },
-    ],
-    medium: [
-      { duration: '30s', target: 10 },
-      { duration: '60s', target: 10 },
-      { duration: '15s', target: 20 },
-      { duration: '60s', target: 20 },
-      { duration: '30s', target: 50 },
-      { duration: '90s', target: 50 },
-      { duration: '30s', target: 0 },
-    ],
-    heavy: [
-      { duration: '30s', target: 10 },
-      { duration: '60s', target: 10 },
-      { duration: '15s', target: 20 },
-      { duration: '60s', target: 20 },
-      { duration: '30s', target: 50 },
-      { duration: '90s', target: 50 },
-      { duration: '60s', target: 100 },
-      { duration: '300s', target: 100 },
-      { duration: '60s', target: 200 },
-      { duration: '180s', target: 200 },
-      { duration: '60s', target: 0 },
-    ],
-    custom: [
-      { duration: '30s', target: 10 },
-      { duration: '60s', target: 10 },
-      { duration: '15s', target: 20 },
-      { duration: '60s', target: 20 },
-      { duration: '30s', target: 50 },
-      { duration: '90s', target: 50 },
-      { duration: '60s', target: 100 },
-      { duration: '600s', target: 100 },
-      { duration: '60s', target: 200 },
-      { duration: '180s', target: 200 },
-      { duration: '60s', target: 0 },
-    ],
+    light: [{duration:'20s',target:5},{duration:'30s',target:5},{duration:'10s',target:10},{duration:'30s',target:10},{duration:'15s',target:20},{duration:'30s',target:20},{duration:'20s',target:0}],
+    medium: [{duration:'30s',target:10},{duration:'60s',target:10},{duration:'15s',target:20},{duration:'60s',target:20},{duration:'30s',target:50},{duration:'90s',target:50},{duration:'30s',target:0}],
+    heavy: [{duration:'30s',target:10},{duration:'60s',target:10},{duration:'15s',target:20},{duration:'60s',target:20},{duration:'30s',target:50},{duration:'90s',target:50},{duration:'60s',target:100},{duration:'300s',target:100},{duration:'60s',target:200},{duration:'180s',target:200},{duration:'60s',target:0}],
+    custom: [{duration:'30s',target:10},{duration:'60s',target:10},{duration:'15s',target:20},{duration:'60s',target:20},{duration:'30s',target:50},{duration:'90s',target:50},{duration:'60s',target:100},{duration:'600s',target:100},{duration:'60s',target:200},{duration:'180s',target:200},{duration:'60s',target:0}],
   };
-  stages = JSON.parse(JSON.stringify(presets[name] || presets.medium));
+  stages = JSON.parse(JSON.stringify(presets[name]||presets.medium));
   renderStages();
   addLog(`📌 已加载预设: ${name}`);
 }
 
 // ============================================================================
-// Chart.js
+// Charts
 // ============================================================================
 const MAX_POINTS = 120;
-
 function createChart(id, label, color, unit) {
   return new Chart(document.getElementById(id).getContext('2d'), {
     type: 'line',
-    data: { labels: [], datasets: [{ label, data: [], borderColor: color, backgroundColor: color + '20', fill: true, tension: 0.3, pointRadius: 0, borderWidth: 2 }] },
+    data: { labels:[], datasets:[{label,data:[],borderColor:color,backgroundColor:color+'20',fill:true,tension:0.3,pointRadius:0,borderWidth:2}] },
     options: {
-      responsive: true, maintainAspectRatio: false, animation: { duration: 300 },
-      plugins: {
-        legend: { display: false },
-        tooltip: { backgroundColor: '#1a1d28', titleColor: '#e4e6f0', bodyColor: '#e4e6f0', borderColor: '#2a2d3a', borderWidth: 1, callbacks: { label: ctx => `${ctx.parsed.y.toFixed(2)}${unit}` } }
-      },
-      scales: {
-        x: { display: true, ticks: { color: '#8b8fa3', maxTicksLimit: 8, font: { size: 10 } }, grid: { color: '#2a2d3a20' } },
-        y: { beginAtZero: true, ticks: { color: '#8b8fa3', font: { size: 10 } }, grid: { color: '#2a2d3a40' } }
-      }
+      responsive:true, maintainAspectRatio:false, animation:{duration:300},
+      plugins:{legend:{display:false},tooltip:{backgroundColor:'#1a1d28',titleColor:'#e4e6f0',bodyColor:'#e4e6f0',borderColor:'#2a2d3a',borderWidth:1,callbacks:{label:ctx=>`${ctx.parsed.y.toFixed(2)}${unit}`}}},
+      scales:{x:{display:true,ticks:{color:'#8b8fa3',maxTicksLimit:8,font:{size:10}},grid:{color:'#2a2d3a20'}},y:{beginAtZero:true,ticks:{color:'#8b8fa3',font:{size:10}},grid:{color:'#2a2d3a40'}}}
     }
   });
 }
-
-const charts = {
-  vus: createChart('chartVus', 'VUs', '#4f8cff', ''),
-  duration: createChart('chartDuration', 'Duration (s)', '#fbbf24', 's'),
-  failRate: createChart('chartFailRate', 'Error Rate (%)', '#f87171', '%'),
-  rps: createChart('chartRps', 'RPS', '#34d399', '/s'),
-};
-
+const charts = { vus:createChart('chartVus','VUs','#4f8cff',''), duration:createChart('chartDuration','Duration (s)','#fbbf24','s'), failRate:createChart('chartFailRate','Error Rate (%)','#f87171','%'), rps:createChart('chartRps','RPS','#34d399','/s') };
 let timeCounter = 0;
 
 function updateCharts(m) {
@@ -468,8 +312,7 @@ function updateCharts(m) {
   charts.duration.data.labels.push(lbl); charts.duration.data.datasets[0].data.push(m.http_req_duration_p95);
   charts.failRate.data.labels.push(lbl); charts.failRate.data.datasets[0].data.push(m.http_req_failed_rate);
   charts.rps.data.labels.push(lbl); charts.rps.data.datasets[0].data.push(m.http_reqs_rate);
-
-  Object.values(charts).forEach(c => { if (c.data.labels.length > MAX_POINTS) { c.data.labels.shift(); c.data.datasets[0].data.shift(); } });
+  Object.values(charts).forEach(c => { if(c.data.labels.length>MAX_POINTS){c.data.labels.shift();c.data.datasets[0].data.shift();} });
   Object.values(charts).forEach(c => c.update('none'));
 }
 
@@ -477,17 +320,78 @@ function updateStats(m) {
   document.getElementById('statVus').textContent = m.vus;
   const fr = m.http_req_failed_rate;
   const el = document.getElementById('statFailRate');
-  el.textContent = fr.toFixed(2) + '%';
-  el.className = 'stat-value ' + (fr > 5 ? 'text-danger' : fr > 3 ? 'text-warning' : '');
-  document.getElementById('statP95').textContent = m.http_req_duration_p95.toFixed(2) + 's';
+  el.textContent = fr.toFixed(2)+'%';
+  el.className = 'stat-value '+(fr>5?'text-danger':fr>3?'text-warning':'');
+  document.getElementById('statP95').textContent = m.http_req_duration_p95.toFixed(2)+'s';
   document.getElementById('statRps').textContent = m.http_reqs_rate.toFixed(1);
 }
 
 // ============================================================================
-// 日志
+// Report
+// ============================================================================
+let _reportData = null;
+
+function showReport(data) {
+  _reportData = data;
+  document.getElementById('reportCard').classList.add('visible');
+  document.getElementById('reportMeta').textContent = `生成时间: ${new Date().toLocaleString()}`;
+
+  // 解析 Markdown 中的表格数据
+  const lines = data.content.split('\n');
+  let inTable = false, headerRow = null, valueRow = null;
+  for (const line of lines) {
+    if (line.startsWith('| 并发 |')) { inTable = true; continue; }
+    if (inTable && line.startsWith('|')) {
+      const cells = line.split('|').filter(c => c.trim()).map(c => c.trim());
+      if (!headerRow) { headerRow = cells; continue; }
+      valueRow = cells; break;
+    }
+  }
+
+  // 解析概览
+  const meta = {};
+  for (const line of lines) {
+    const mTotal = line.match(/总请求数\s*\|\s*(\d+)/);
+    if (mTotal) meta.total = mTotal[1];
+    const mTokens = line.match(/消耗总 Token\s*\|\s*([\d,]+)/);
+    if (mTokens) meta.tokens = mTokens[1];
+  }
+
+  if (valueRow && valueRow.length >= 9) {
+    document.getElementById('rConcur').textContent = valueRow[0];
+    document.getElementById('rRpm').textContent = valueRow[1];
+    document.getElementById('rTpm').textContent = valueRow[2];
+    document.getElementById('rTtftP50').textContent = valueRow[3];
+    document.getElementById('rTtftP95').textContent = valueRow[4];
+    document.getElementById('rLatP50').textContent = valueRow[5];
+    document.getElementById('rTokS').textContent = valueRow[6];
+    document.getElementById('rSucc').textContent = valueRow[7];
+    document.getElementById('r429').textContent = valueRow[8];
+  }
+
+  document.getElementById('reportRaw').textContent = data.content;
+  addLog(`📊 报告已生成，共 ${meta.total||'?'} 请求，${meta.tokens||'?'} tokens`);
+}
+
+function dismissReport() {
+  document.getElementById('reportCard').classList.remove('visible');
+}
+
+function downloadReport() {
+  if (_reportData) {
+    const a = document.createElement('a');
+    a.href = 'data:text/markdown;charset=utf-8,' + encodeURIComponent(_reportData.content);
+    a.download = _reportData.filename || 'report.md';
+    a.click();
+  } else {
+    addLog('⚠️ 当前没有可下载的报告');
+  }
+}
+
+// ============================================================================
+// Log
 // ============================================================================
 const logContainer = document.getElementById('logContainer');
-
 function addLog(text) {
   const t = new Date().toLocaleTimeString();
   const d = document.createElement('div');
@@ -497,37 +401,34 @@ function addLog(text) {
   while (logContainer.children.length > 300) logContainer.removeChild(logContainer.firstChild);
   document.getElementById('logPanel').scrollTop = document.getElementById('logPanel').scrollHeight;
 }
-
 function escHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
 
 // ============================================================================
 // WebSocket
 // ============================================================================
 let ws = null;
-
 function connectWS() {
   if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return;
   const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
   ws = new WebSocket(`${proto}//${location.host}/ws`);
-
   ws.onmessage = e => {
     const msg = JSON.parse(e.data);
     if (msg.type === 'metrics') { updateStats(msg.data); updateCharts(msg.data); }
     else if (msg.type === 'log') addLog(msg.data);
+    else if (msg.type === 'report') showReport(msg.data);
   };
   ws.onclose = () => setTimeout(connectWS, 2000);
   ws.onerror = () => ws.close();
 }
 
 // ============================================================================
-// 状态
+// State
 // ============================================================================
 let isRunning = false;
 const badge = document.getElementById('statusBadge');
 const statusText = document.getElementById('statusText');
 const btnStart = document.getElementById('btnStart');
 const btnStop = document.getElementById('btnStop');
-
 function setRunning(r) {
   isRunning = r;
   btnStart.disabled = r;
@@ -545,11 +446,9 @@ async function startTest() {
   const api_key = document.getElementById('inputKey').value.trim();
   const model_name = document.getElementById('inputModel').value.trim();
   const max_tokens = parseInt(document.getElementById('inputMaxTokens').value) || 500;
-
   if (!api_url || !api_key) { addLog('⚠️ 请填写 API URL 和 API Key'); return; }
   if (stages.length === 0) { addLog('⚠️ 请至少添加一个压力阶段'); return; }
 
-  // 清空图表
   timeCounter = 0;
   Object.values(charts).forEach(c => { c.data.labels = []; c.data.datasets[0].data = []; c.update(); });
 
@@ -557,24 +456,20 @@ async function startTest() {
   addLog(`📋 共 ${stages.length} 个阶段，最大并发 ${stages.reduce((m,s)=>Math.max(m,s.target),0)} VU`);
 
   try {
-    const resp = await fetch('/api/start', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ api_url, api_key, model_name, max_tokens, stages }),
-    });
+    const resp = await fetch('/api/start', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({api_url,api_key,model_name,max_tokens,stages}) });
     const data = await resp.json();
-    if (data.status === 'started') { setRunning(true); addLog('✅ 压测已启动，等待 k6 输出...'); }
+    if (data.status === 'started') { setRunning(true); addLog('✅ 压测已启动'); }
     else addLog(`❌ ${data.message}`);
-  } catch (e) { addLog(`❌ 启动失败: ${e.message}`); }
+  } catch(e) { addLog(`❌ 启动失败: ${e.message}`); }
 }
 
 async function stopTest() {
   addLog('🛑 正在停止压测...');
   try {
-    const resp = await fetch('/api/stop', { method: 'POST' });
+    const resp = await fetch('/api/stop', { method:'POST' });
     const data = await resp.json();
     addLog(`✅ ${data.message}`);
-  } catch (e) { addLog(`❌ 停止失败: ${e.message}`); }
+  } catch(e) { addLog(`❌ 停止失败: ${e.message}`); }
   setRunning(false);
 }
 
@@ -584,17 +479,15 @@ async function checkStatus() {
     const data = await resp.json();
     if (data.running) { setRunning(true); if (data.metrics) updateStats(data.metrics); }
     else if (!data.running && isRunning) setRunning(false);
-  } catch (e) {}
+  } catch(e) {}
 }
 
 // ============================================================================
-// 初始化
+// Init
 // ============================================================================
 connectWS();
 checkStatus();
 setInterval(checkStatus, 5000);
-
-// 默认加载原文档阶梯预设
 loadPreset('custom');
 </script>
 </body>
