@@ -197,9 +197,15 @@ class StressTestManager:
         if not self.process:
             return
         await self.process.wait()
+        exit_code = self.process.returncode
         self.running = False
-        await asyncio.sleep(1)  # 等最后一点数据写入
-        await self._broadcast({"type": "log", "data": "⏹ k6 进程已退出，正在生成报告..."})
+        await self._broadcast({"type": "log",
+                               "data": f"[k6] 已退出 (exit code: {exit_code})"})
+        if exit_code != 0 and exit_code is not None:
+            await self._broadcast({"type": "log",
+                                   "data": "[k6] 非正常退出，检查 API URL/Key 是否正确"})
+        await asyncio.sleep(2)
+        await self._broadcast({"type": "log", "data": "正在生成报告..."})
         await self._generate_report()
         await self._cleanup()
 
@@ -214,8 +220,12 @@ class StressTestManager:
         await self._cleanup()
 
     async def _cleanup(self) -> None:
-        for task in [self._metrics_file_task, self._stderr_task,
-                     self._push_task, self._exit_watch_task]:
+        if self._stderr_task and not self._stderr_task.done():
+            try:
+                await asyncio.wait_for(self._stderr_task, timeout=2)
+            except (asyncio.TimeoutError, asyncio.CancelledError):
+                self._stderr_task.cancel()
+        for task in [self._metrics_file_task, self._push_task, self._exit_watch_task]:
             if task and not task.done():
                 task.cancel()
         for tmp_path in [self._tmp_script, self._tmp_metrics]:
@@ -253,13 +263,21 @@ class StressTestManager:
             await asyncio.sleep(0.5)
 
     async def _read_stderr(self) -> None:
-        while self.running and self.process and self.process.stderr:
-            line = await self.process.stderr.readline()
-            if not line:
-                break
-            text = line.decode().strip()
-            if text:
-                await self._broadcast({"type": "log", "data": text})
+        proc = self.process
+        if not proc or not proc.stderr:
+            return
+        try:
+            while True:
+                line = await asyncio.wait_for(proc.stderr.readline(), timeout=30)
+                if not line:
+                    break
+                text = line.decode().strip()
+                if text:
+                    await self._broadcast({"type": "log", "data": text})
+        except asyncio.TimeoutError:
+            pass
+        except Exception:
+            pass
 
     def _process_metric(self, data: dict) -> None:
         metric = data.get("metric")
