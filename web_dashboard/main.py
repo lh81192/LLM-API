@@ -258,9 +258,9 @@ class StressTestManager:
                         except json.JSONDecodeError:
                             pass
                     last_pos = f.tell()
-            except (FileNotFoundError, PermissionError):
+            except Exception:
                 pass
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(1)
 
     async def _read_stderr(self) -> None:
         proc = self.process
@@ -280,8 +280,12 @@ class StressTestManager:
             pass
 
     def _process_metric(self, data: dict) -> None:
+        if data.get("type") != "Point":
+            return
         metric = data.get("metric")
         value = data.get("data", {}).get("value")
+        if value is None:
+            return
 
         if metric == "vus":
             self.metrics["vus"] = int(value)
