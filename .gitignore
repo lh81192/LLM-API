@@ -3,4 +3,5 @@ __pycache__/
 *.pyc
 .DS_Store
 *_k6_test.js
+*_k6_metrics.json
 /tmp/

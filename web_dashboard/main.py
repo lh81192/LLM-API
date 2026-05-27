@@ -87,7 +87,8 @@ class StressTestManager:
         self.process: Optional[asyncio.subprocess.Process] = None
         self.running = False
         self.start_time: Optional[float] = None
-        self._tmp_script: Optional[str] = None  # 临时脚本路径
+        self._tmp_script: Optional[str] = None   # 临时脚本路径
+        self._tmp_metrics: Optional[str] = None  # 临时指标文件路径
 
         # 当前聚合指标
         self.metrics = {
@@ -111,7 +112,7 @@ class StressTestManager:
         self._success_count = 0
 
         # 后台任务
-        self._stdout_task: Optional[asyncio.Task] = None
+        self._metrics_file_task: Optional[asyncio.Task] = None
         self._stderr_task: Optional[asyncio.Task] = None
         self._push_task: Optional[asyncio.Task] = None
 
@@ -127,17 +128,24 @@ class StressTestManager:
         tmp.close()
         self._tmp_script = tmp.name
 
+        # 创建临时指标输出文件（避免 /dev/stdout 权限问题）
+        metrics_tmp = tempfile.NamedTemporaryFile(mode='w', suffix='_k6_metrics.json',
+                                                  delete=False, dir=BASE_DIR)
+        metrics_tmp.close()
+        self._tmp_metrics = metrics_tmp.name
+
         cmd = [
             "k6", "run",
             "-e", f"API_URL={api_url}",
             "-e", f"API_KEY={api_key}",
             "-e", f"MODEL_NAME={model_name}",
-            "--out", "json=/dev/stdout",
+            "--out", f"json={self._tmp_metrics}",
             self._tmp_script,
         ]
 
         await self._broadcast({"type": "log", "data": f"📄 动态脚本已生成: {os.path.basename(self._tmp_script)}"})
         await self._broadcast({"type": "log", "data": f"📋 Stages: {json.dumps(stages)}"})
+        await self._broadcast({"type": "log", "data": f"📊 指标输出: {os.path.basename(self._tmp_metrics)}"})
 
         self.process = await asyncio.create_subprocess_exec(
             *cmd,
@@ -149,7 +157,7 @@ class StressTestManager:
         self.start_time = time.time()
 
         # 启动后台协程
-        self._stdout_task = asyncio.create_task(self._read_stdout())
+        self._metrics_file_task = asyncio.create_task(self._read_metrics_file())
         self._stderr_task = asyncio.create_task(self._read_stderr())
         self._push_task = asyncio.create_task(self._push_metrics_loop())
 
@@ -164,33 +172,47 @@ class StressTestManager:
                 self.process.kill()
 
         # 取消后台任务
-        for task in [self._stdout_task, self._stderr_task, self._push_task]:
+        for task in [self._metrics_file_task, self._stderr_task, self._push_task]:
             if task and not task.done():
                 task.cancel()
 
-        # 清理临时脚本
-        if self._tmp_script and os.path.exists(self._tmp_script):
-            try:
-                os.unlink(self._tmp_script)
-                await self._broadcast({"type": "log", "data": "🧹 临时脚本已清理"})
-            except OSError:
-                pass
-            self._tmp_script = None
+        # 清理临时文件
+        for tmp_path in [self._tmp_script, self._tmp_metrics]:
+            if tmp_path and os.path.exists(tmp_path):
+                try:
+                    os.unlink(tmp_path)
+                except OSError:
+                    pass
+        self._tmp_script = None
+        self._tmp_metrics = None
+        await self._broadcast({"type": "log", "data": "🧹 临时文件已清理"})
 
-    async def _read_stdout(self) -> None:
-        """读取 k6 JSON 指标输出流"""
-        while self.running and self.process and self.process.stdout:
-            line = await self.process.stdout.readline()
-            if not line:
-                break
-            line = line.decode().strip()
-            if not line:
-                continue
+    async def _read_metrics_file(self) -> None:
+        """从临时文件读取 k6 JSON 指标（解决 /dev/stdout 权限问题）"""
+        path = self._tmp_metrics
+        if not path:
+            return
+        last_pos = 0
+        # 等待文件创建
+        while self.running and not os.path.exists(path):
+            await asyncio.sleep(0.2)
+        while self.running:
             try:
-                data = json.loads(line)
-                self._process_metric(data)
-            except json.JSONDecodeError:
+                with open(path, 'r') as f:
+                    f.seek(last_pos)
+                    for line in f:
+                        line = line.strip()
+                        if not line:
+                            continue
+                        try:
+                            data = json.loads(line)
+                            self._process_metric(data)
+                        except json.JSONDecodeError:
+                            pass
+                    last_pos = f.tell()
+            except (FileNotFoundError, PermissionError):
                 pass
+            await asyncio.sleep(0.5)
 
     async def _read_stderr(self) -> None:
         """读取 k6 控制台日志并广播到前端"""
